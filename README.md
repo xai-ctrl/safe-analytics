@@ -2,7 +2,6 @@
 
 This project identifies the **Top 10 protocols Safe users interact with** on Ethereum mainnet using a blend of **on-chain data**, **API insights**, and **heuristics** to classify protocol interactions with high accuracy.
 
----
 
 ## 🚀 What It Does
 
@@ -13,7 +12,7 @@ This project identifies the **Top 10 protocols Safe users interact with** on Eth
   - Scraping **Etherscan contract pages** for protocol clues
 - 🧹 Filters out noise: Safe infra, proxies, tokens
 
----
+
 
 ## 📦 Usage
 
@@ -34,12 +33,27 @@ npm run start
 ---
 
 ## 📁 Output
-- `top_protocols.csv` : Final ranked list of the top 10 protocols
+- `top_protocols.csv` : Final ranked list of the top protocols
 
-- Console output: A neatly formatted summary table
+- `console output` : A neatly formatted summary table
+
+| Rank | Protocol    | Interactions | Unique Safes | Contract Addresses   |
+| ---- | ----------- | ------------ | ------------ | -------------------- |
+| 1    | CowSwap     | 80,337       | 9,841        | 0x9008..., 0xfdaf... |
+| 2    | Aave        | 8,138        | 1,617        | 0x91b3..., 0x7079... |
+| 3    | 1inch       | 7,910        | 2,082        | 0x1111...            |
+| 4    | Uniswap     | 7,455        | 2,096        | 0x3fc9...            |
+| 5    | LiFiDiamond | 4,460        | 1,412        | 0x1231...            |
+| 6    | Morpho      | 4,392        | 349          | 0xbbbb...            |
+| 7    | Pendle      | 4,235        | 588          | 0x8888...            |
+| 8    | LooksRare   | 4,192        | 8            | 0x0000...            |
+
 ---
 ## 📉 Dune Query Setup
-We use a custom query on Dune that fetches the top contracts interacted with by Safe wallets:
+
+### Timeline
+ > We use a custom query on Dune that fetches the top contracts interacted with by Safe wallets starting from January 1, 2023:
+
 ```
 SELECT 
   t.to AS contract_address,
@@ -59,6 +73,32 @@ LIMIT 200
 - Fetcher script: `src/fetchInteractions.js`
 
 > Due to rate limits and timeouts from Dune’s side, we use a capped LIMIT 200 approach. This keeps it stable under test constraints, but the query can be easily scaled up or optimized further when needed.
+---
+## 🧭 Approach (Simplified)
+
+1. **Input**  
+   - Read from `interactions.csv`  
+   - Columns: `contract_address`, `total_interactions`, `unique_safe_users`
+
+2. **Labeling**  
+   - For each address:
+     - Get Etherscan label via API
+     - Check ABI to detect tokens
+     - Scrape Etherscan page for protocol hints  
+   - Skip if:
+     - It’s an ERC-20 token  
+     - It’s Safe infra (proxy, factory, etc.)  
+   - Assign protocol name using scraped data or normalized label
+
+3. **Grouping**  
+   - Group addresses by protocol  
+   - Sum `interactions` and `unique_safe_users`  
+   - Collect contributing contract addresses
+
+4. **Output**  
+   - Save results to `top_protocols.csv`  
+   - Print a ranked summary table in the console
+
 ---
 ## ⚠️ Challenges & Heuristics
 - ⏱ Few Etherscan API rate limits (429s) — solved via a delay of 200ms between requests
@@ -97,13 +137,14 @@ LIMIT 200
 
 ```bash
 
-├── index.js                 # Main entry point
 ├── src/
+│   ├── index.js             # Main entry point
 │   ├── fetchInteractions.js # Pulls data from Dune
 │   ├── services/            # Scraper, analyzer, Etherscan utils
 │   └── utils/               # Helpers for CSV, delays, etc.
-├── interactions.csv         # Dune output (if fetched)
-├── top_protocols.csv        # Final output
+├── data
+│   ├── interactions.csv     # Dune output (if fetched)
+│   ├── top_protocols.csv    # Final output
 ├── .env                     # API keys
 └── README.md                # This file
 ```
