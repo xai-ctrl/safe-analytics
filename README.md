@@ -39,18 +39,19 @@ npm run fetch:tokens
 - `top_protocols.csv` : Final ranked list of the top protocols
 
 - `console output` : A neatly formatted summary table
-  | Rank | Protocol | Interactions | Unique Safes | Contract Addresses |
-  |------|--------------|--------------|---------------|--------------------------------------------------------------------------------------|
-  | 1 | Morpho | 130 | 4 | 0xfbc7693f114273739c74a3ff028c13769c49f2d0, 0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb |
-  | 2 | CowSwap | 108 | 26 | 0x9008d19f58aabd9ed0d60971565aa8510560ab41, 0xcafeab8ea64dbf83e0cf85353abab5c4adc8da56 |
-  | 3 | Convex | 100 | 4 | 0x963f487796d54d2f27ba6f3fbe91154ca103b199, 0x723f9aa67fdd9b0e375ef8553eb2afc28ecd4a96 |
-  | 4 | Booster | 78 | 3 | 0xf403c135812408bfbe8713b5a23a04b3d48aae31 |
-  | 5 | 0x | 69 | 4 | 0xcafea9cb6c71be9adb08a7142678b4bc5d82c4fe, 0x66612207a7e8d540b72edda94e3126935545a0b0, 0x592e353c5b97356e99eaf6a72b971ba1c9695593 |
-  | 6 | Rocket Pool | 46 | 2 | 0x6cc65bf618f55ce2433f9d8d827fc44117d81399 |
-  | 7 | MemberRoles | 25 | 1 | 0xcafea69fb5b61d15c0b4bea5a2c40177fbad6686 |
-  | 8 | Ramm | 25 | 1 | 0xcafea99c870c5dabaeeabfd86985a7040d05808f |
-  | 9 | ClaimZap | 25 | 2 | 0xdd49a93fdcae579ae50b4b9923325e9e335ec82b |
-  | 10 | Staking | 25 | 1 | 0xcafea518644e270f87c32ee95afe55cb2af5cd55 |
+  
+| Rank | Protocol | Interactions | Unique Safes | Contract Addresses |
+|------|--------------|--------------|---------------|--------------------------------------------------------------------------------------|
+| 1 | Morpho | 130 | 4 | 0xfbc7693f114273739c74a3ff028c13769c49f2d0, 0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb |
+| 2 | CowSwap | 108 | 26 | 0x9008d19f58aabd9ed0d60971565aa8510560ab41, 0xcafeab8ea64dbf83e0cf85353abab5c4adc8da56 |
+| 3 | Convex | 100 | 4 | 0x963f487796d54d2f27ba6f3fbe91154ca103b199, 0x723f9aa67fdd9b0e375ef8553eb2afc28ecd4a96 |
+| 4 | Booster | 78 | 3 | 0xf403c135812408bfbe8713b5a23a04b3d48aae31 |
+| 5 | 0x | 69 | 4 | 0xcafea9cb6c71be9adb08a7142678b4bc5d82c4fe, 0x66612207a7e8d540b72edda94e3126935545a0b0, 0x592e353c5b97356e99eaf6a72b971ba1c9695593 |
+| 6 | Rocket Pool | 46 | 2 | 0x6cc65bf618f55ce2433f9d8d827fc44117d81399 |
+| 7 | MemberRoles | 25 | 1 | 0xcafea69fb5b61d15c0b4bea5a2c40177fbad6686 |
+| 8 | Ramm | 25 | 1 | 0xcafea99c870c5dabaeeabfd86985a7040d05808f |
+| 9 | ClaimZap | 25 | 2 | 0xdd49a93fdcae579ae50b4b9923325e9e335ec82b |
+| 10 | Staking | 25 | 1 | 0xcafea518644e270f87c32ee95afe55cb2af5cd55 |
 
 - `top_tokens.csv` : ranked list of top tokens
 
@@ -115,6 +116,27 @@ LIMIT 100;
 
 ```
 
+### We considered using Dune’s native contract labels but faced blockers
+
+
+- Coverage Gaps: Several protocol contracts used by Safe wallets (e.g. CowSwap routers, Morpho markets) had no labels or were mislabeled.
+
+- Timeouts: Joining large decoded trace data with the labels table significantly increased query execution time and often hit Dune limits.
+```sql
+SELECT
+  idc.contract_address,
+  COALESCE(MAX(lc.name), 'Unknown') AS label,  -- Label join
+  COUNT(*) AS total_interactions,
+  COUNT(DISTINCT st.safe_wallet) AS unique_safe_users
+FROM internal_decoded_calls idc
+JOIN safe_txs st ON idc.tx_hash = st.tx_hash
+LEFT JOIN labels.contracts lc ON lc.address = idc.contract_address
+  AND lc.blockchain = 'ethereum'
+GROUP BY idc.contract_address
+ORDER BY total_interactions DESC
+LIMIT 100;
+```
+
 - Dune Query ID: 5291974
 - Fetcher script: `src/fetchInteractions.js`
 
@@ -133,8 +155,33 @@ Each row represents a contract, showing:
 - `unique_safe_users` : Number of distinct Safes that interacted with it
 
 ---
+### 🔍 Theoretical Breakdown of the Query
 
+#### 1. Identifying Safe Executions
+- Combines all successful calls from:
+  - `execTransaction`
+  - `execTransactionFromModule`
+  - `execTransactionFromModuleReturnData`
+- Covers both direct and module-triggered executions by Safe wallets.
+- Captures: `tx_hash`, `safe_wallet`, and `call_block_time`.
+
+#### 2. Filtering by Date Range
+- Filters transactions to those within **June 2024** only.
+
+#### 3. Tracing Internal Calls
+- Joins with `ethereum.traces_decoded` to extract **internal delegatecalls**.
+- Uses `cardinality(trace_address) > 0` to exclude top-level calls.
+- Focuses on actual protocols interacted with (not wrappers like MultiSend).
+
+#### 4. Final Aggregation
+- For each contract called internally:
+  - Counts `total_interactions`
+  - Counts `unique_safe_users`
+- Sorts and returns **top 100 contract addresses** based on interaction volume.
+
+---
 ## 🧭 Approach (Simplified)
+
 
 1. **Input**
 
