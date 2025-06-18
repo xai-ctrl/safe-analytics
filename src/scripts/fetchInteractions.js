@@ -3,7 +3,7 @@ const { DuneClient } = require("@duneanalytics/client-sdk");
 const fs = require("fs").promises;
 
 const client = new DuneClient(process.env.DUNE_API_KEY);
-const InteractionsQueryID = 5255316;
+const InteractionsQueryID = 5291974;
 
 async function fetchInteractions() {
   try {

@@ -23,7 +23,10 @@ class ContractAnalyzer {
       .trim();
 
     if (normalized.match(/GP|ComposableCoW/i)) return "CowSwap";
+    if (/Rocket/i.test(label)) return "Rocket Pool";
+    if (/^0x$/i.test(label)) return "0x Project";
     if (normalized.match(/Aggregation/i)) return "1inch";
+    if (/PoolRewardHook/i.test(label)) return "Convex";
     if (normalized.match(/Universal/i)) return "Uniswap";
     if (normalized.match(/Dfs/i)) return null; // Exclude DefiSaver utilities
 
@@ -32,27 +35,41 @@ class ContractAnalyzer {
 
   static isSafeOrInfra(label) {
     const safeInfraKeywords = [
-      "safe",
-      "gnosis",
-      "multisig",
-      "proxy",
+      "airdrop",
+      "auth",
+      "bundler",
+      "controller",
+      "dfs",
+      "escrow",
+      "executor",
       "factory",
-      "wallet",
-      "module",
+      "fallback",
+      "governor",
+      "gnosis",
       "guard",
       "handler",
-      "multisend",
-      "fallback",
-      "airdrop",
-      "signer",
-      "executor",
-      "logger",
+      "kernel",
       "lib",
-      "controller",
-      "bundler",
+      "logger",
+      "logic",
+      "module",
+      "multisend",
+      "multisig",
+      "oracle",
+      "price",
+      "proxy",
+      "registry",
+      "safe",
+      "signer",
+      "storage",
+      "strategy",
+      "vault",
+      "wallet",
       "wrapper",
-      "dfs",
-      "governor",
+      "resolver",
+      "vyper",
+      "mcr",
+      "lending",
     ];
 
     return safeInfraKeywords.some((keyword) =>
