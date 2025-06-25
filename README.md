@@ -77,40 +77,51 @@ npm run fetch:tokens
 We analyze Safe wallet activity for the month of **June 2024**, using a refined Dune query that focuses on **internal contract calls** triggered from Safe transactions. This method ensures we include real protocol interactions — even when bundled via `MultiSend`, `execTransaction`, or other Safe modules.
 
 ```sql
+-- Step 1: Combine all Safe executions into one table
 WITH base_safe_calls AS (
-  SELECT 'exec' AS source, call_tx_hash AS tx_hash, call_tx_from AS safe_wallet, call_block_time
+  SELECT call_tx_hash AS tx_hash, call_tx_from AS safe_wallet, call_block_time
   FROM safe_ethereum.gnosissafe_call_exectransaction
+
   UNION ALL
-  SELECT 'mod' AS source, call_tx_hash, call_tx_from, call_block_time
+
+  SELECT call_tx_hash, call_tx_from, call_block_time
   FROM safe_ethereum.gnosissafe_call_exectransactionfrommodule
+
   UNION ALL
-  SELECT 'mod_return' AS source, call_tx_hash, call_tx_from, call_block_time
+
+  SELECT call_tx_hash, call_tx_from, call_block_time
   FROM safe_ethereum.gnosissafe_call_exectransactionfrommodulereturndata
 ),
 
-safe_txs AS (
+-- Step 2: Filter by date range only once
+filtered_safe_calls AS (
   SELECT tx_hash, safe_wallet
   FROM base_safe_calls
   WHERE call_block_time BETWEEN TIMESTAMP '2024-06-01' AND TIMESTAMP '2024-06-30'
 ),
 
-internal_decoded_calls AS (
-  SELECT
-    td.tx_hash,
-    td.to AS contract_address
+-- Step 3: Get decoded contract calls (internal + direct)
+decoded_contract_calls AS (
+  SELECT DISTINCT td.tx_hash, td.to AS contract_address
   FROM ethereum.traces_decoded td
-  JOIN safe_txs st ON td.tx_hash = st.tx_hash
-  WHERE cardinality(td.trace_address) > 0
-    AND td.to IS NOT NULL
+  JOIN filtered_safe_calls fsc ON td.tx_hash = fsc.tx_hash
+  WHERE td.to IS NOT NULL
+),
+
+-- Step 4: Aggregate interactions
+aggregated_interactions AS (
+  SELECT
+    dcc.contract_address,
+    COUNT(*) AS total_interactions,
+    COUNT(DISTINCT fsc.safe_wallet) AS unique_safe_users
+  FROM decoded_contract_calls dcc
+  JOIN filtered_safe_calls fsc ON dcc.tx_hash = fsc.tx_hash
+  GROUP BY dcc.contract_address
 )
 
-SELECT
-  idc.contract_address,
-  COUNT(*) AS total_interactions,
-  COUNT(DISTINCT st.safe_wallet) AS unique_safe_users
-FROM internal_decoded_calls idc
-JOIN safe_txs st ON idc.tx_hash = st.tx_hash
-GROUP BY idc.contract_address
+-- Step 5: Return Top 100
+SELECT *
+FROM aggregated_interactions
 ORDER BY total_interactions DESC
 LIMIT 100;
 
@@ -158,26 +169,31 @@ Each row represents a contract, showing:
 ### 🔍 Theoretical Breakdown of the Query
 
 #### 1. Identifying Safe Executions
-- Combines all successful calls from:
+- Combines all Safe-initiated calls from:
   - `execTransaction`
   - `execTransactionFromModule`
   - `execTransactionFromModuleReturnData`
-- Covers both direct and module-triggered executions by Safe wallets.
-- Captures: `tx_hash`, `safe_wallet`, and `call_block_time`.
+- Captures `tx_hash`, `safe_wallet`, and `call_block_time`.
+- Ensures coverage of both standard and module-based executions.
 
 #### 2. Filtering by Date Range
-- Filters transactions to those within **June 2024** only.
+- Filters transactions to those executed within **June 2024**.
+- Applied once across all Safe calls after combining them.
 
-#### 3. Tracing Internal Calls
-- Joins with `ethereum.traces_decoded` to extract **internal delegatecalls**.
-- Uses `cardinality(trace_address) > 0` to exclude top-level calls.
-- Focuses on actual protocols interacted with (not wrappers like MultiSend).
+#### 3. Tracing All Protocol Interactions
+- Joins with `ethereum.traces_decoded` to extract **both**:
+  - Direct contract calls (`trace_address = []`)
+  - Internal/delegatecalls (`trace_address > 0`)
+- Filters out:
+  - Null `to` addresses
+- Ensures full capture of all protocol interactions triggered by Safe wallets.
 
-#### 4. Final Aggregation
-- For each contract called internally:
-  - Counts `total_interactions`
-  - Counts `unique_safe_users`
-- Sorts and returns **top 100 contract addresses** based on interaction volume.
+#### 4. Final Aggregation & Deduplication
+- Deduplicates `(tx_hash, contract_address)` pairs to avoid overcounting.
+- Aggregates:
+  - `total_interactions` – number of distinct Safe transactions per contract
+  - `unique_safe_users` – number of unique Safe wallets per contract
+- Returns the **top 100 most interacted-with contracts**.
 
 ---
 ## 🧭 Approach (Simplified)
