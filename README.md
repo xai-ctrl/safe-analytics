@@ -39,34 +39,33 @@ npm run fetch:tokens
 - `top_protocols.csv` : Final ranked list of the top protocols
 
 - `console output` : A neatly formatted summary table
-  
-| Rank | Protocol | Interactions | Unique Safes | Contract Addresses |
-|------|--------------|--------------|---------------|--------------------------------------------------------------------------------------|
-| 1 | Morpho | 130 | 4 | 0xfbc7693f114273739c74a3ff028c13769c49f2d0, 0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb |
-| 2 | CowSwap | 108 | 26 | 0x9008d19f58aabd9ed0d60971565aa8510560ab41, 0xcafeab8ea64dbf83e0cf85353abab5c4adc8da56 |
-| 3 | Convex | 100 | 4 | 0x963f487796d54d2f27ba6f3fbe91154ca103b199, 0x723f9aa67fdd9b0e375ef8553eb2afc28ecd4a96 |
-| 4 | Booster | 78 | 3 | 0xf403c135812408bfbe8713b5a23a04b3d48aae31 |
-| 5 | 0x | 69 | 4 | 0xcafea9cb6c71be9adb08a7142678b4bc5d82c4fe, 0x66612207a7e8d540b72edda94e3126935545a0b0, 0x592e353c5b97356e99eaf6a72b971ba1c9695593 |
-| 6 | Rocket Pool | 46 | 2 | 0x6cc65bf618f55ce2433f9d8d827fc44117d81399 |
-| 7 | MemberRoles | 25 | 1 | 0xcafea69fb5b61d15c0b4bea5a2c40177fbad6686 |
-| 8 | Ramm | 25 | 1 | 0xcafea99c870c5dabaeeabfd86985a7040d05808f |
-| 9 | ClaimZap | 25 | 2 | 0xdd49a93fdcae579ae50b4b9923325e9e335ec82b |
-| 10 | Staking | 25 | 1 | 0xcafea518644e270f87c32ee95afe55cb2af5cd55 |
+
+| Rank | Protocol | Interactions | Unique Safes | Contract Address                           |
+| ---- | -------- | ------------ | ------------ | ------------------------------------------ |
+| 1    | 0x       | 370          | 107          | 0x9d6a86facdcf24859a38e6b9a2ef87610a4fc157 |
+| 2    | CowSwap  | 54           | 26           | 0x9008d19f58aabd9ed0d60971565aa8510560ab41 |
+| 3    | Convex   | 19           | 5            | 0x4e3fbd56cd56c3e72c1403e103b45db9da5b9d2b |
+| 4    | Compound | 17           | 4            | 0xc0da02939e1441f497fd74f78ce7decb17b66529 |
+| 5    | Curve    | 17           | 7            | 0xd533a949740bb3306d119cc777fa900ba034cd52 |
+| 6    | Booster  | 8            | 3            | 0xf403c135812408bfbe8713b5a23a04b3d48aae31 |
+| 7    | Aave     | 8            | 2            | 0x72e95b8931767c79ba4eee721354d6e99a61d004 |
 
 - `top_tokens.csv` : ranked list of top tokens
 
-| Rank | Token Name             | Interactions | Unique Safes | Contract Address                           |
-| ---- | ---------------------- | ------------ | ------------ | ------------------------------------------ |
-| 1    | TetherToken            | 310,855      | 14,197       | 0xdac17f958d2ee523a2206206994597c13d831ec7 |
-| 2    | EtherFiGovernanceToken | 40,937       | 346          | 0xfe0c30065b384f05761f15d0cc899d4f9f9cc0eb |
-| 3    | Dai                    | 34,056       | 4,208        | 0x6b175474e89094c44da98b954eedeac495271d0f |
-| 4    | USDe                   | 33,662       | 511          | 0x4c9edd5852cd905f086c759e8383e09bff1e68b3 |
-| 5    | LinkToken              | 29,307       | 1,167        | 0x514910771af9ca656af840dff83e8264ecf986ca |
-| 6    | RX                     | 24,853       | 12           | 0x5b1e769e74fd7e532a48261ab42ee906f0090556 |
-| 7    | WBTC                   | 13,926       | 2,143        | 0x2260fac5e5542a773aa44fbcfedf7c193bc2c599 |
-| 8    | FetchToken             | 13,299       | 127          | 0xaea46a60368a7bd060eec7df8cba43b7ef41ad85 |
-| 9    | AIAnalysisToken        | 13,147       | 4            | 0x0501b9188436e35bb10f35998c40adc079003866 |
-| 10   | WrappedNCG             | 12,669       | 21           | 0xf203ca1769ca8e9e8fe1da9d147db68b6c919817 |
+### 🪙 Top Tokens Interacted With by Safe Wallets (June 2024)
+
+| Rank | Token Name          | Interactions | Unique Safes | Contract Address                           |
+| ---- | ------------------- | ------------ | ------------ | ------------------------------------------ |
+| 1    | Tether USD          | 96           | 35           | 0xdac17f958d2ee523a2206206994597c13d831ec7 |
+| 2    | HEX Token           | 36           | 1            | 0x2b591e99afe9f32eaa6214f7b7629768c40eeb39 |
+| 3    | Dai Stablecoin      | 22           | 12           | 0x6b175474e89094c44da98b954eedeac495271d0f |
+| 4    | Compound            | 22           | 6            | 0xc00e94cb662c3520282e6f5717214004a7f26888 |
+| 5    | Lido                | 20           | 6            | 0x17144556fd3424edc8fc8a4c940b2d04936d17eb |
+| 6    | Convex Token        | 19           | 5            | 0x4e3fbd56cd56c3e72c1403e103b45db9da5b9d2b |
+| 7    | Rocket Pool ETH     | 11           | 3            | 0xae78736cd615f374d3085123a210448e74fc6393 |
+| 8    | Curve DAO Token     | 10           | 5            | 0xd533a949740bb3306d119cc777fa900ba034cd52 |
+| 9    | Orion Token         | 9            | 2            | 0x0258f474786ddfd37abce6df6bbb1dd5dfc4434a |
+| 10   | Aave Interest Token | 9            | 3            | 0x7effd7b47bfd17e52fb7559d3f924201b9dbff3d |
 
 ---
 
@@ -260,6 +259,8 @@ Detects ERC-20 tokens from `interactions.csv` by analyzing contract metadata, sc
   - Web scraping (cheerio) for tags and known protocol mentions
 
 - 🧱 Proxy & Safe infra contracts — excluded using hardcoded keyword filters (proxy, gnosis, wallet, etc.)
+
+> **MultiSend & Nested Calls Decoding Limitations** — Safe wallets often batch multiple contract interactions using `MultiSend` or similar delegate calls. While Dune provides decoded traces for many calls, fully decoding nested internal calls from raw traces alongside decoded ones significantly increases query complexity and runtime, often leading to timeouts or performance issues. Due to these constraints, our query primarily uses decoded traces, capturing most interactions but potentially missing few internal batched calls. This limitation means some protocol interactions might be undercounted but reflects a practical trade-off given current tooling and data access.
 
 ## 💡 Future Improvements
 

@@ -15,8 +15,13 @@ class DataProcessor {
 
   static groupByProtocol(contractsWithProtocols) {
     const protocolMap = {};
-    
-    for (const { protocol, interactions, uniqueSafes, address } of contractsWithProtocols) {
+
+    for (const {
+      protocol,
+      interactions,
+      uniqueSafes,
+      address,
+    } of contractsWithProtocols) {
       if (!protocolMap[protocol]) {
         protocolMap[protocol] = {
           interactions: 0,
@@ -24,34 +29,48 @@ class DataProcessor {
           addresses: [],
         };
       }
-      
+
       protocolMap[protocol].interactions += interactions;
       protocolMap[protocol].uniqueSafes += uniqueSafes;
-      protocolMap[protocol].addresses.push(address);
+      if (!protocolMap[protocol].addressMap) {
+        protocolMap[protocol].addressMap = {};
+      }
+      protocolMap[protocol].addressMap[address] =
+        (protocolMap[protocol].addressMap[address] || 0) + interactions;
     }
-    
+
     return protocolMap;
   }
 
   static sortAndLimit(protocolMap, limit = 10) {
+    const getTopAddress = (addressMap) => {
+      return Object.entries(addressMap).sort((a, b) => b[1] - a[1])[0][0]; // most-used address
+    };
+
     return Object.entries(protocolMap)
       .map(([protocol, data]) => ({
         protocol,
         interactions: data.interactions,
         uniqueSafes: data.uniqueSafes,
-        address: data.addresses,
+        address: getTopAddress(data.addressMap),
       }))
       .sort((a, b) => b.interactions - a.interactions)
       .slice(0, limit);
   }
 
   static logResults(protocols) {
-    console.log("Rank | Protocol | Interactions | Unique Safes | Contract Address");
+    console.log(
+      "Rank | Protocol | Interactions | Unique Safes | Contract Address"
+    );
     console.log("-".repeat(70));
-    
+
     protocols.forEach((protocol, index) => {
       console.log(
-        `${index + 1} | ${protocol.protocol} | ${protocol.interactions.toLocaleString()} | ${protocol.uniqueSafes.toLocaleString()} | ${protocol.address}`
+        `${index + 1} | ${
+          protocol.protocol
+        } | ${protocol.interactions.toLocaleString()} | ${protocol.uniqueSafes.toLocaleString()} | ${
+          protocol.address
+        }`
       );
     });
   }

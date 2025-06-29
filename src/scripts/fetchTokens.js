@@ -135,14 +135,14 @@ async function fetchTokens() {
   const csvWriter = createObjectCsvWriter({
     path: "data/top_tokens.csv",
     header: [
-      { id: "contract_address", title: "contract_address" },
+      { id: "protocol_name", title: "protocol_name" },
       { id: "total_interactions", title: "total_interactions" },
       { id: "unique_safe_users", title: "unique_safe_users" },
-      { id: "protocol_name", title: "protocol_name" },
+      { id: "contract_address", title: "contract_address" },
     ],
   });
 
-  await csvWriter.writeRecords(tokens.slice(0, 10));
+  await csvWriter.writeRecords(tokens.slice(0, 20));
   console.log(
     `✅ Saved ${
       tokens.length > 10 ? 10 : tokens.length
